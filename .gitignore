@@ -57,3 +57,6 @@ cmake_install.cmake
 *.exe
 *.out
 *.app
+
+# output binary
+Rasterizer
