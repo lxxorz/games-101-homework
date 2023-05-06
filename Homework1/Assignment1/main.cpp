@@ -26,7 +26,15 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
     // TODO: Implement this function
     // Create the model matrix for rotating the triangle around the Z axis.
     // Then return it.
+    const auto sin_v = sin(rotation_angle);
+    const auto cos_v = cos(rotation_angle);
+    model(0, 0) = cos_v;
+    model(1, 0) = -sin_v;
 
+    model(1, 0) = sin_v;
+    model(1, 1) = cos_v;
+
+    model(2,2) = 0;
     return model;
 }
 
@@ -40,8 +48,38 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     // TODO: Implement this function
     // Create the projection matrix for the given parameters.
     // Then return it.
+    const auto tan_v = tan(eye_fov * MY_PI / 180);
+    const auto t = tan_v * zNear;
+    const auto b = -t;
 
-    return projection;
+    const auto l = t * aspect_ratio;
+    const auto r = -l;
+
+    // 统一近平面和远平面
+    const auto abs_n = fabs(zFar - zNear);
+    projection(0, 0) = abs_n;
+    projection(1,1) = abs_n;
+    projection(2,2) = zNear + zFar;
+    projection(2,3) = -zNear * zFar;
+    projection(3,2)  = 1;
+    projection(3,3)  = 0;
+
+    // 正交投影
+    Eigen::Matrix4f orthographicProjection = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f transition = Eigen::Matrix4f::Identity();
+    /**
+     * 1. 长方体中心移动到原点
+     * 2. 长宽高设置为[-1, 1]
+    */
+    transition(3, 0) = -(l + r) / 2;
+    transition(3, 1) = -(b + t) / 2;
+    transition(3, 2) = -(zNear + zFar) / 2;
+
+
+    orthographicProjection(0, 0) = 2/(-(t - b));
+    orthographicProjection(1,1) = 2/(-(r-l));
+    orthographicProjection(2,2) = 2/(-(zNear-zFar));
+    return orthographicProjection * transition * projection;
 }
 
 int main(int argc, const char** argv)
