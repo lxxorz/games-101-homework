@@ -82,48 +82,19 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
 }
 
 
-Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
-                                      float zNear, float zFar)
+Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
 {
-    // Students will implement this function
-
-    Eigen::Matrix4f scale = Eigen::Matrix4f::Identity();
-
-    // TODO: Implement this function
-    // Create the projection matrix for the given parameters.
-    // Then return it.
-    const auto tan_v = tan(eye_fov * MY_PI / 180);
-    const auto top = tan_v * zNear;
-    const auto bottom = -top;
-
-    const auto left = top * aspect_ratio;
-    const auto right = -left;
-
-    // 统一近平面和远平面
-    const auto planeDistance = fabs(zFar - zNear);
-    scale(0, 0) = planeDistance;
-    scale(1, 1) = planeDistance;
-    scale(2, 2) = zNear + zFar;
-    scale(2, 3) = -zNear * zFar;
-    scale(3, 2) = 1;
-    scale(3, 3) = 0;
-
-    // 正交投影
-    Eigen::Matrix4f orthographicProjection = Eigen::Matrix4f::Identity();
-    Eigen::Matrix4f translate = Eigen::Matrix4f::Identity();
-    /**
-     * 1. 长方体中心移动到原点
-     * 2. 长宽高设置为[-1, 1]
-     */
-    translate(3, 0) = -(left + right) / 2;
-    translate(3, 1) = -(bottom + top) / 2;
-    translate(3, 2) = -(zNear + zFar) / 2;
-
-    orthographicProjection(0, 0) = 2 / (-(top - bottom));
-    orthographicProjection(1, 1) = 2 / (-(right - left));
-    orthographicProjection(2, 2) = 2 / (-(zNear - zFar));
-    return orthographicProjection * translate * scale;
+    const float tan_half_fov = tan(eye_fov * 0.5f * MY_PI / 180.0f);
+    const float zRange = zNear - zFar;
+    Eigen::Matrix4f projMat = Eigen::Matrix4f::Zero();
+    projMat(0, 0) = 1.0f / (aspect_ratio * tan_half_fov);
+    projMat(1, 1) = 1.0f / tan_half_fov;
+    projMat(2, 2) = (-zNear - zFar) / zRange;
+    projMat(2, 3) = 2.0f * zFar * zNear / zRange;
+    projMat(3, 2) = 1.0f;
+    return projMat;
 }
+
 
 int main(int argc, const char **argv)
 {
