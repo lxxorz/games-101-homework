@@ -58,13 +58,17 @@ Eigen::Matrix4f get_rotation_matrix(float rotation_angle, Eigen::Vector3f axis, 
     const auto alpha = rotation_angle * MY_PI / 180.0;
     Eigen::Vector4f axis_4 = Eigen::Vector4f({axis.x(), axis.y(), axis.z(), 0});
     rotation = cos(alpha) * I + (1 - cos(alpha)) * (axis_4 * axis_4.transpose())  + sin(alpha) * N;
+    for(auto i = 0 ; i < 3; ++i) {
+        rotation(3, i) = 0;
+        rotation(i, 3) = 0;
+    }
+    rotation(3,3) = 1;
     // 撤回
     Eigen::Matrix4f rollback = Eigen::Matrix4f::Identity();
     rollback(0, 3) = start.x();
     rollback(1, 3) = start.y();
     rollback(2, 3) = start.z();
     Eigen::Matrix4f res =  rollback * rotation * translate;
-    res(3,3) = 1;
     std::cout << rollback << std::endl;
     std::cout << translate << std::endl;
     return res;
@@ -73,7 +77,7 @@ Eigen::Matrix4f get_rotation_matrix(float rotation_angle, Eigen::Vector3f axis, 
 Eigen::Matrix4f get_model_matrix(float rotation_angle)
 {
     return get_rotation_matrix(rotation_angle,
-                               Eigen::Vector3f{0, 1, 0},
+                               Eigen::Vector3f{1, 0, 0},
                                Eigen::Vector3f{0, 0, -2});
 }
 
