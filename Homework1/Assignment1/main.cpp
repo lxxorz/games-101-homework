@@ -68,17 +68,14 @@ Eigen::Matrix4f get_rotation_matrix(float rotation_angle, Eigen::Vector3f axis, 
     rollback(0, 3) = start.x();
     rollback(1, 3) = start.y();
     rollback(2, 3) = start.z();
-    Eigen::Matrix4f res =  rollback * rotation * translate;
-    std::cout << rollback << std::endl;
-    std::cout << translate << std::endl;
-    return res;
+    return rollback * rotation * translate;
 }
 
 Eigen::Matrix4f get_model_matrix(float rotation_angle)
 {
     return get_rotation_matrix(rotation_angle,
-                               Eigen::Vector3f{1, 0, 0},
-                               Eigen::Vector3f{0, 0, -2});
+                               Eigen::Vector3f{0, 0, 1},
+                               Eigen::Vector3f{0, 0, 0});
 }
 
 
