@@ -25,7 +25,6 @@ Result:
 1. Creating a Zero Matrix
 ```c++
 Eigen::Matrix4f m = Eigen::Matrix4f::Zero();
-
 ```
 
 2. Creating an Identity Matrix
