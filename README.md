@@ -7,12 +7,12 @@ Select the specified assignment
 cd ./Homework1/Assignment1
 ```
 
-Build
+Build:
 ```sh
 cmake ./
 make
 ```
-Excute
+Excute:
 ```sh
 ./Rasterizer -r 30 result.png
 ```
