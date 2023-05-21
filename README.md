@@ -36,3 +36,9 @@ Eigen::Matrix4f m = Eigen::Matrix4f::Identity();
 ```c++
 m(row, col) = 0;
 ```
+
+
+### Assignment 2
+
+1. Handle vectors with care, ensuring that the order follows "end point minus start point"
+2. Float-point equality operation is not accurate.
