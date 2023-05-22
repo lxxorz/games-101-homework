@@ -30,7 +30,8 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
 
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
 {
-    // TODO: Copy-paste your implementation from the previous assignment.
+    // TODO 此处有误，导致三角形上下左右颠倒需要重写
+    // TODO Copy-paste your implementation from the previous assignment.
     const float tan_half_fov = tan(eye_fov * 0.5f * MY_PI / 180.0f);
     const float zRange = zNear - zFar;
     Eigen::Matrix4f projMat = Eigen::Matrix4f::Zero();
