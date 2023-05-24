@@ -28,20 +28,41 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
     return model;
 }
 
-Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
+auto getRadian(float angle) {
+    return angle * 2 * MY_PI / 360;
+}
+Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float n, float f)
 {
-    // TODO 此处有误，导致三角形上下左右颠倒需要重写
     // TODO Copy-paste your implementation from the previous assignment.
-    const float tan_half_fov = tan(eye_fov * 0.5f * MY_PI / 180.0f);
-    const float zRange = zNear - zFar;
-    Eigen::Matrix4f projMat = Eigen::Matrix4f::Zero();
-    projMat(0, 0) = 1.0f / (aspect_ratio * tan_half_fov);
-    projMat(1, 1) = 1.0f / tan_half_fov;
-    projMat(2, 2) = (-zNear - zFar) / zRange;
-    projMat(2, 3) = 2.0f * zFar * zNear / zRange;
-    projMat(3, 2) = 1.0f;
-    return projMat;
 
+    Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
+    projection(0, 0) = n;
+    projection(1,1) = n;
+    // n->n^2 has nothing to do with (x, y) , therefore the third row is (0, 0, A, B). where An + B = n^2.
+    // Additionally, the center point on the far plane's z does not change, so Af + B = f^2
+    projection(2,2) = n + f;
+    projection(2,3) = -n * f;
+    projection(3, 2) = 1;
+
+    // orthographcal projection
+    // map a cuboid[l, r] x [b, t] x [f, n] to [1,-1]^3
+    // step 1: translate
+    // step 2: scale
+    const auto fov = getRadian(eye_fov);
+    const auto b = tan(fov/2) * n;
+    const auto t = -b;
+    const auto l = aspect_ratio * b;
+    const auto r = -l;
+    Eigen::Matrix4f trans = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f scale = Eigen::Matrix4f::Identity();
+    trans(0, 3) = -(l+r)/2;
+    trans(1, 3) = -(b+t)/2;
+    trans(2, 3) = -(f+n)/2;
+    scale(0, 0) = 2/(r-l);
+    scale(1, 1) = 2/(t-b);
+    scale(2, 2) = 2/(n-f);
+
+    return scale * trans * projection;
 }
 
 int main(int argc, const char** argv)
