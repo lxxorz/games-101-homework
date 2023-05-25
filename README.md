@@ -37,6 +37,9 @@ Eigen::Matrix4f m = Eigen::Matrix4f::Identity();
 m(row, col) = 0;
 ```
 
+### Assignment 1
+
+1. the zNear and zFar is negative
 
 ### Assignment 2
 
