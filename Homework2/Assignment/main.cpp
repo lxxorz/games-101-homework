@@ -34,35 +34,35 @@ auto getRadian(float angle) {
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float n, float f)
 {
     // TODO Copy-paste your implementation from the previous assignment.
-
-    Eigen::Matrix4f projection = Eigen::Matrix4f::Zero();
-    projection(0, 0) = n;
-    projection(1,1) = n;
+    n = -n, f = -f;
+    Eigen::Matrix4f pers_to_ortho = Eigen::Matrix4f::Zero();
+    pers_to_ortho(0, 0) = n;
+    pers_to_ortho(1,1) = n;
     // n->n^2 has nothing to do with (x, y) , therefore the third row is (0, 0, A, B). where An + B = n^2.
     // Additionally, the center point on the far plane's z does not change, so Af + B = f^2
-    projection(2,2) = n + f;
-    projection(2,3) = -n * f;
-    projection(3, 2) = 1;
+    pers_to_ortho(2,2) = n + f;
+    pers_to_ortho(2,3) = -n * f;
+    pers_to_ortho(3, 2) = 1;
 
     // orthographcal projection
     // map a cuboid[l, r] x [b, t] x [f, n] to [1,-1]^3
     // step 1: translate
     // step 2: scale
     const auto fov = getRadian(eye_fov);
-    const auto b = tan(fov/2) * n;
-    const auto t = -b;
+    const auto t = tan(fov/2) * fabsf(n);
+    const auto b = -t;
     const auto l = aspect_ratio * b;
     const auto r = -l;
     Eigen::Matrix4f trans = Eigen::Matrix4f::Identity();
     Eigen::Matrix4f scale = Eigen::Matrix4f::Identity();
+    // 位移矩阵是不需要的， 顺手写一下
     trans(0, 3) = -(l+r)/2;
     trans(1, 3) = -(b+t)/2;
     trans(2, 3) = -(f+n)/2;
     scale(0, 0) = 2/(r-l);
     scale(1, 1) = 2/(t-b);
     scale(2, 2) = 2/(n-f);
-
-    return scale * trans * projection;
+    return scale * trans * pers_to_ortho;
 }
 
 int main(int argc, const char** argv)

@@ -43,8 +43,8 @@ static bool insideTriangle(const Eigen::Vector3f &point, const Vector3f *_v)
     const auto r3 = (_v[0] - _v[2]).cross(point - _v[2]);
 
     // 浮点数的相等判断不准确
-    const bool cond1 = r1.dot(r2) >= 0.00f;
-    const bool cond2 = r1.dot(r3) >= 0.00f;
+    const bool cond1 = r1.dot(r2) > 0.00f;
+    const bool cond2 = r1.dot(r3) > 0.00f;
 
     return cond1 && cond2;
 }
