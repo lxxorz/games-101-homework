@@ -129,11 +129,7 @@ void rst::rasterizer::rasterize_triangle(const Triangle &t)
             float w_reciprocal = 1.0 / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
             float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
             z_interpolated *= w_reciprocal;
-
-            const auto pixel_point = Eigen::Vector3f(x, y, z_interpolated);
-            const bool is_inside_triangle = insideTriangle(pixel_point, t.v);
-
-            if (is_inside_triangle)
+            if (insideTriangle(Eigen::Vector3f(x+0.5, y+0.5, z_interpolated), t.v))
             {
                 // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
                 auto depth = depth_buf[get_index(x, y)];
@@ -141,7 +137,7 @@ void rst::rasterizer::rasterize_triangle(const Triangle &t)
                 {
                     depth_buf[get_index(x, y)] = z_interpolated;
                     const auto color = t.getColor();
-                    set_pixel(pixel_point, color);
+                    set_pixel(Eigen::Vector3f(x, y, z_interpolated), color);
                 }
             }
         }

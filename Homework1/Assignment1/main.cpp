@@ -84,7 +84,6 @@ auto getRadian(float angle) {
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float n, float f)
 {
     // TODO Copy-paste your implementation from the previous assignment.
-    n = -n, f = -f;
     Eigen::Matrix4f pers_to_ortho = Eigen::Matrix4f::Zero();
     pers_to_ortho(0, 0) = n;
     pers_to_ortho(1,1) = n;
@@ -99,10 +98,10 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float n
     // step 1: translate
     // step 2: scale
     const auto fov = getRadian(eye_fov);
-    const auto t = tan(fov/2) * fabsf(n);
+    const auto t = tan(fov/2) * fabs(n);
     const auto b = -t;
-    const auto l = aspect_ratio * b;
-    const auto r = -l;
+    const auto r = aspect_ratio * t;
+    const auto l = -r;
     Eigen::Matrix4f trans = Eigen::Matrix4f::Identity();
     Eigen::Matrix4f scale = Eigen::Matrix4f::Identity();
     trans(0, 3) = -(l+r)/2;
