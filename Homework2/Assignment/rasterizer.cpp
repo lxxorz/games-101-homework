@@ -136,8 +136,13 @@ void rst::rasterizer::rasterize_triangle(const Triangle &t)
             if (is_inside_triangle)
             {
                 // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
-                const auto color = t.getColor();
-                set_pixel(pixel_point, color);
+                auto depth = depth_buf[get_index(x, y)];
+                if (depth > z_interpolated)
+                {
+                    depth_buf[get_index(x, y)] = z_interpolated;
+                    const auto color = t.getColor();
+                    set_pixel(pixel_point, color);
+                }
             }
         }
     }
