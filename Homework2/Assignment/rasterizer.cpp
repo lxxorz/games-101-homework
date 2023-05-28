@@ -34,10 +34,11 @@ auto to_vec4(const Eigen::Vector3f &v3, float w = 1.0f)
     return Vector4f(v3.x(), v3.y(), v3.z(), w);
 }
 
-static bool insideTriangle(const Eigen::Vector3f &point, const Vector3f *_v)
+static bool insideTriangle(float x, float y, const Vector3f *_v)
 {
     // TODO : Implement this function to check if the point (x, y) is inside the triangle represented by _v[0], _v[1], _v[2]
     // computing the center pointer coordinate of (x,y)
+    const auto point = Vector3f(x, y, 0.0f);
     const auto r1 = (_v[1] - _v[0]).cross(point - _v[0]);
     const auto r2 = (_v[2] - _v[1]).cross(point - _v[1]);
     const auto r3 = (_v[0] - _v[2]).cross(point - _v[2]);
@@ -114,14 +115,14 @@ void rst::rasterizer::rasterize_triangle(const Triangle &t)
     // TODO : Find out the bounding box of current triangle.
     // iterate through the pixel and find if the current pixel is inside the triangle
     const auto &points = t.v;
-    const float bounding_box_left = std::min(points[0].x(), std::min(points[1].x(), points[2].x()));
-    const float bounding_box_right = std::max(points[0].x(), std::max(points[1].x(), points[2].x()));
-    const float bounding_box_bottom = std::min(points[0].y(), std::min(points[1].y(), points[2].y()));
-    const float bounding_box_top = std::max(points[0].y(), std::max(points[1].y(), points[2].y()));
-    std::cout << bounding_box_bottom << ", " << bounding_box_top << ", " << bounding_box_left << ", " << bounding_box_right << std::endl;
-    for (int x = bounding_box_left; x <= bounding_box_right; ++x)
+    const float left = std::floor(std::min(points[0].x(), std::min(points[1].x(), points[2].x())));
+    const float right = std::ceil(std::max(points[0].x(), std::max(points[1].x(), points[2].x())));
+    const float bottom = std::floor(std::min(points[0].y(), std::min(points[1].y(), points[2].y())));
+    const float top = std::ceil(std::max(points[0].y(), std::max(points[1].y(), points[2].y())));
+
+    for (int x = left; x <= right; ++x)
     {
-        for (int y = bounding_box_bottom; y <= bounding_box_top; ++y)
+        for (int y = bottom; y <= top; ++y)
         {
             // counter-wise order cross product
             // If so, use the following code to get the interpolated z value.
@@ -129,15 +130,39 @@ void rst::rasterizer::rasterize_triangle(const Triangle &t)
             float w_reciprocal = 1.0 / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
             float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
             z_interpolated *= w_reciprocal;
-            if (insideTriangle(Eigen::Vector3f(x+0.5, y+0.5, z_interpolated), t.v))
+
+            const bool MSAA = true;
+            // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
+            const auto depth = depth_buf[get_index(x, y)];
+            const auto color = t.getColor();
+            // anti-aliasing
+            if (z_interpolated < depth)
             {
-                // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
-                auto depth = depth_buf[get_index(x, y)];
-                if (depth > z_interpolated)
+                if (MSAA)
                 {
-                    depth_buf[get_index(x, y)] = z_interpolated;
-                    const auto color = t.getColor();
+                    unsigned int weight = 0;
+                    const unsigned int sample_num = 4;
+                    const float ratio = 1.0f / (sample_num * sample_num);
+                    for (int x_offset = 0; x_offset < sample_num; ++x_offset)
+                    {
+                        for (int y_offset = 0; y_offset < sample_num; ++y_offset)
+                        {
+                            if (insideTriangle(x + x_offset/(float)sample_num, y+y_offset/(float)sample_num, t.v))
+                            {
+                                weight++;
+                            }
+                        }
+                    }
+                    if (weight)
+                    {
+                        set_pixel(Eigen::Vector3f(x, y, z_interpolated), color * ratio * weight);
+                        depth_buf[get_index(x, y)] = z_interpolated;
+                    }
+                }
+                else if (insideTriangle(x + 0.5, y + 0.5, t.v))
+                {
                     set_pixel(Eigen::Vector3f(x, y, z_interpolated), color);
+                    depth_buf[get_index(x, y)] = z_interpolated;
                 }
             }
         }
