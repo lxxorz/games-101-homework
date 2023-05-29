@@ -91,7 +91,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float n
     // Additionally, the center point on the far plane's z does not change, so Af + B = f^2
     pers_to_ortho(2,2) = n + f;
     pers_to_ortho(2,3) = -n * f;
-    pers_to_ortho(3, 2) = 1;
+    pers_to_ortho(3, 2) = -1;
 
     // orthographcal projection
     // map a cuboid[l, r] x [b, t] x [f, n] to [1,-1]^3
